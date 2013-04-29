@@ -1,0 +1,47 @@
+#!/bin/bash
+# this script works for double indexed Solexa runs, Merged only (Monly) fastq 
+# files that have "@M_SOLEXA-GA" at the beginning of the ID of the reads
+# run it like this
+# # fastq_to_species.sh fastq
+ 
+INPUT_FILE=$1
+
+# 1  Filter for the reads longer than 35 bases:
+/mnt/solexa/bin/pipeline1.0/LengthFilterFastQ.py --length=35 --outfile=${INPUT_FILE}.1 ${INPUT_FILE}
+
+# 2 Extract sequences from thr FastQ file
+#   Collapse molecules in clusters and count the cluster sizes
+#   Kick out clusters comprised of at least two molecules 
+# If your reads in the fastq file don't start with @M_SOLEXA-GA, change it here
+perl -ne 'if (/\@M/) {$n=4} else {$n-=1}; print if ($n==3)' ${INPUT_FILE}.1 |sort | uniq -c | sort -bnr | perl -ane ' print if $F[0]>1'  > ${INPUT_FILE}.2 
+
+# 3 Transform to fasta file keeping the cluster size and rank information
+#   e.g. > 453_1
+#          ATTCCCGAAGGTT...
+perl -ane' print ">$F[0]_$.\n$F[1]\n"' ${INPUT_FILE}.2 > ${INPUT_FILE}.3
+
+# 4 Kick out sequences of low complexity with Martin's complexity filter
+/mnt/solexa/bin/pipeline1.0/ComplexFilterFastQ.py -e 1 -n 2 -c 1.2 --outfile ${INPUT_FILE}.4 ${INPUT_FILE}.3
+
+# 5 Use bwa to create sai files with the default settings (-n 0.04)
+#   For ancient DNA one could use -n 0.01
+/mnt/solexa/bin/bwa-0.5.5/bwa aln -n 0.04 -t 8 /home/qiaomei_fu/Work/ref/all_242_genomes_concatanated.fa ${INPUT_FILE}.4  > ${INPUT_FILE}.5
+
+# 6 sai to sam conversion - reporting missmatches that are up to one mutation away from the best hit 
+/mnt/solexa/bin/bwa-0.5.5/bwa samse -n 242 /home/qiaomei_fu/Work/ref/all_242_genomes_concatanated.fa ${INPUT_FILE}.5 ${INPUT_FILE}.4 > ${INPUT_FILE}.6
+
+# 7 kick out clusters that hit more than once to the same reference
+/home/public/user/Tomi/Qiaomei/SolexaRun090626/perl_scripts/one_hit_per_reference.pl ${INPUT_FILE}.6 > ${INPUT_FILE}.7
+
+# 8 kick out lines starting with > that don't align to any of the references
+/home/public/user/Tomi/Qiaomei/SolexaRun090626/perl_scripts/keep_only_mapped_identifiers.pl ${INPUT_FILE}.7 > ${INPUT_FILE}.8
+
+# 9 make Lachmann tables
+/home/public/user/Tomi/Qiaomei/SolexaRun090626/perl_scripts/bwa_filtered_to_Lacchman.pl /home/public/user/Tomi/Qiaomei/SolexaRun090626/bwa/ref_list_242_genomes.txt ${INPUT_FILE}.8 > ${INPUT_FILE}.9
+
+# 10 make matrix plot (PDF) for first best, second best hit species (X axis is reads, y axis is species)
+/home/qiaomei_fu/command/R/bin/Rscript /home/qiaomei_fu/Work/Species_detemination_Vindija/sai_files/matrix_Table_number.R ${INPUT_FILE}.9
+
+# delete intermediate files 
+mv  ${INPUT_FILE}.9.pdf ./${INPUT_FILE}.pdf
+rm ${INPUT_FILE}.?
