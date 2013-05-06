@@ -44,4 +44,4 @@ perl -ane' print ">$F[0]_$.\n$F[1]\n"' ${INPUT_FILE}.2 > ${INPUT_FILE}.3
 
 # delete intermediate files 
 mv  ${INPUT_FILE}.9.pdf ./${INPUT_FILE}.pdf
-rm ${INPUT_FILE}.?
+# rm ${INPUT_FILE}.?
