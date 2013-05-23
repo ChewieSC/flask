@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Mitochondria Analysis & Statistics</title>
+        <link rel="shortcut icon" href="{{url_for('static', filename='favicon.ico')}}" />
+        <link rel="stylesheet" type="text/css" href="/static/style.css" />
+        <script type="text/javascript" src="/static/jquery-1.7.1.min.js"></script>
+		<script>
+		function showInfo()
+		{
+			document.getElementById("userInfo").value="The File is being uploaded."
+		}
+</script>
+    </head>
+    <body>
+        <div id="content">
+            {% block body %}{% endblock %}
+        </div>
+    </body>
+</html>

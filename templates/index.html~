@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block body %}
+    <h2>Upload a file</h2> <!-- TODO: Input-Format Beschreibung fehlt, manage non-UTF-8, manage multiple uploads -->
+    <p>You can only upload '.txt' files with the following format:<br />
+	<pre>
+	yadi<br />
+	yada<br />
+	</pre>
+	<form method="POST" action=""
+      enctype="multipart/form-data"
+      > <!-- what would this extra parameter do: action="./demo.html" ? -->
+		<input type="file" name="file" value="Browse"/>
+		<br />
+		<input type="submit" value="Upload" />
+	</form></p> <!-- TODO: insert handler -->
+	 <p>
+	 <form id="form_upload" action="/upload" method="POST">
+  <input type="file" name="picture" id="picture" />
+  <input type="hidden" id="X-Progress-ID" name="X-Progress-ID" value=""/>
+  <input type="hidden" id="id" name="id" value=""/>
+  <input id="form_submit_button" class="tp-button" type="submit" value="Upload" />
+  </form></p>
+	<p>
+	{% with messages = get_flashed_messages(category_filter=["upload"]) %}
+	{% if messages %}
+	<div class="alert-message block-message uploaded">
+		<!-- <a class="close" href="#">×</a> -->
+		<ul>
+			{%- for msg in messages %}
+			<li>{{ msg }}</li>
+			{% endfor -%}
+		</ul>
+	</div>
+	{% endif %}
+	{% endwith %}
+	</p>
+<!-- because of the large file sizes which are to be expected, the --
+  -- text  field is pretty much senseless
+	<h2>or use the text field below</h2>
+	<p>
+		<form method="post" action="">
+			<textarea name="comments" type="text" cols="80" rows="20"></textarea><br>
+			<input type="submit" name="action" value="Process Data" />
+		</form>
+-->
+   <p>
+		<form method="get" action="">
+			<button type="submit">Download!</button>
+		</form>
+	</p>
+	<p>
+	{% with messages = get_flashed_messages(category_filter=["process"]) %}
+	{% if messages %}
+	<div class="alert-message block-message processed">
+		<ul>
+			{%- for msg in messages %}
+			<li>{{ msg }}</li>
+			{% endfor -%}
+		</ul>
+	</div>
+	{% endif %}
+	{% endwith %}
+	</p>
+{% endblock %}

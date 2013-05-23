@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block body %}
+    <h2>Processing the File</h2> 
+	<p>The file is being processed. This usually takes around 2-3 minutes.</p>
+   <p> <!-- Download should only be possible after Upload -->
+		<form method="get" action="/static/cavebear.pdf">
+			<button type="submit">Download!</button>
+		</form>
+	</p>
+	<p>
+	{% with messages = get_flashed_messages(category_filter=["process"]) %}
+	{% if messages %}
+	<div class="alert-message block-message processed">
+		<ul>
+			{%- for msg in messages %}
+			<li>{{ msg }}</li>
+			{% endfor -%}
+		</ul>
+	</div>
+	{% endif %}
+	{% endwith %}
+	</p>
+	<h2>Results:</h2>
+	<p>
+	<img src="/static/cavebear.png" alt="the best result" width="750" height="800" />
+	<img src="/static/cavebear2.png" alt="the second and third best result" width="450" height="800" />
+	</p>
+	
+{% endblock %}
